@@ -15,6 +15,9 @@ help:
 	@echo "  make env        - Create .env file from example"
 	@echo ""
 
+install:
+	uv sync
+
 dev:
 	uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
@@ -22,7 +25,7 @@ run:
 	uv run python -m app.main
 
 worker:
-	uv run celery -A app.workers worker --loglevel=info
+	uv run celery -A app.workers.celery_app worker --loglevel=info --concurrency=1
 
 test:
 	uv run pytest

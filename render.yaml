@@ -1,0 +1,79 @@
+# Render Blueprint — https://dashboard.render.com → New → Blueprint
+# After first deploy, set secrets prompted by sync: false (Supabase, CORS).
+
+services:
+  - type: web
+    name: dora-api
+    runtime: python
+    plan: free
+    region: oregon
+    autoDeployTrigger: commit
+    buildCommand: uv sync --frozen --no-dev
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: CORS_ORIGINS
+        sync: false
+      - fromGroup: dora-api-shared
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: dora-api-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: dora-api-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: worker
+    name: dora-api-worker
+    runtime: python
+    plan: starter
+    region: oregon
+    autoDeployTrigger: commit
+    buildCommand: uv sync --frozen --no-dev
+    # PDF jobs are long-running; keep concurrency at 1
+    startCommand: uv run celery -A app.workers.celery_app worker --loglevel=info --concurrency=1
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - fromGroup: dora-api-shared
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: dora-api-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: dora-api-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: keyvalue
+    name: dora-api-redis
+    plan: starter
+    region: oregon
+    # Persist queue state across restarts; don't drop tasks under memory pressure
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # internal connections only
+
+envVarGroups:
+  - name: dora-api-shared
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: AQUIFER_API_KEY
+        sync: false
