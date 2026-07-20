@@ -1,6 +1,6 @@
 # Dora API
 
-A FastAPI service that returns Aquifer biblical content related to highlighted text in the Bible app. Built on a scaffold with async background job processing, Supabase storage, and status polling.
+A FastAPI service that returns Aquifer biblical content related to highlighted text in the Bible app.
 
 ## Architecture Overview
 
@@ -9,7 +9,6 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 - **Backend**: FastAPI + Uvicorn
 - **Database**: Supabase Postgres
 - **Storage**: Supabase Storage
-- **Background Tasks**: Celery (async job processing)
 - **Package Management**: uv
 
 ## Project Structure
@@ -25,11 +24,8 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 │   │   └── __init__.py
 │   ├── handlers/            # API endpoint handlers (business logic)
 │   │   ├── __init__.py
-│   │   ├── health.py        # Health check endpoint
-│   │   └── jobs.py          # Job CRUD endpoints
-│   ├── database/            # Database & storage operations
-│   │   └── __init__.py
-│   └── workers/             # Celery background tasks
+│   │   └── health.py        # Health check endpoint
+│   └── database/            # Database & storage operations
 │       └── __init__.py
 ├── tests/
 │   ├── __init__.py
@@ -39,7 +35,7 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 │       └── __init__.py
 ├── .env.example             # Environment variable template
 ├── .python-version          # Python version for local + Render
-├── render.yaml              # Render Blueprint (web + worker + Redis)
+├── render.yaml              # Render Blueprint (web service)
 ├── pyproject.toml           # Project dependencies
 ├── uv.lock                  # Locked dependencies
 ├── Makefile                 # Common development commands
@@ -76,11 +72,6 @@ Start the FastAPI server:
 uv run uvicorn app.main:app --reload
 ```
 
-Start the Celery worker (in a separate terminal):
-```bash
-uv run celery -A app.workers.celery_app worker --loglevel=info --concurrency=1
-```
-
 Access the API documentation at: `http://localhost:8000/docs`
 
 #### Using Make Commands
@@ -88,7 +79,6 @@ Access the API documentation at: `http://localhost:8000/docs`
 ```bash
 make install    # Install dependencies
 make dev        # Run development server
-make worker     # Run Celery worker
 make test       # Run tests
 ```
 
@@ -99,8 +89,6 @@ This repo includes a [Render Blueprint](https://render.com/docs/blueprint-spec) 
 | Service | Type | Purpose |
 |---------|------|---------|
 | `dora-api` | Web | FastAPI (`uvicorn`) |
-| `dora-api-worker` | Background Worker | Celery PDF processing |
-| `dora-api-redis` | Key Value | Celery broker / result backend |
 
 ### Steps
 
@@ -115,9 +103,7 @@ This repo includes a [Render Blueprint](https://render.com/docs/blueprint-spec) 
 5. Deploy. The API will be at `https://dora-api.onrender.com` (or the URL Render assigns).
 6. Confirm `GET /health` returns `{"status":"healthy"}`.
 
-Celery broker URLs are wired automatically from the Redis Key Value instance. Python is pinned to **3.13.5** via `PYTHON_VERSION` and `.python-version`. Builds use `uv sync --frozen --no-dev`.
-
-> **Cost note:** The web service is on the free plan; the worker and Redis use starter plans (required for persistent queues / background workers). Adjust `plan` in `render.yaml` as needed.
+Python is pinned to **3.13.5** via `PYTHON_VERSION` and `.python-version`. Builds use `uv sync --frozen --no-dev`.
 
 ## API Endpoints
 
@@ -126,4 +112,3 @@ Celery broker URLs are wired automatically from the Redis Key Value instance. Py
 GET /health
 Returns: { "status": "healthy" }
 ```
-

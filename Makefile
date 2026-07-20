@@ -1,4 +1,4 @@
-.PHONY: help install dev run worker test clean lint format
+.PHONY: help install dev run test clean lint format
 
 help:
 	@echo "Dora API - Available Commands:"
@@ -6,7 +6,6 @@ help:
 	@echo "  make install    - Install dependencies"
 	@echo "  make dev        - Run development server with auto-reload"
 	@echo "  make run        - Run production server"
-	@echo "  make worker     - Run Celery worker"
 	@echo "  make test       - Run tests"
 	@echo "  make test-cov   - Run tests with coverage"
 	@echo "  make lint       - Run linters (ruff)"
@@ -23,9 +22,6 @@ dev:
 
 run:
 	uv run python -m app.main
-
-worker:
-	uv run celery -A app.workers.celery_app worker --loglevel=info --concurrency=1
 
 test:
 	uv run pytest

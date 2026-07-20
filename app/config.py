@@ -16,10 +16,6 @@ class Settings(BaseSettings):
     AQUIFER_API_KEY: str | None = None
     AQUIFER_BASE_URL: str = "https://api.aquifer.bible"
 
-    # Celery Configuration
-    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
-    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
-
     # Application Configuration
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
