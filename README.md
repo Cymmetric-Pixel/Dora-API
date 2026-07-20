@@ -1,16 +1,14 @@
 # Dora API
 
-A FastAPI service that returns Aquifer biblical content related to highlighted text in the Bible app. Built on a scaffold with async background job processing, Supabase storage, and status polling.
+A FastAPI service that returns Aquifer biblical content related to highlighted text in the Bible app.
 
-## Architecture Overview
-
-### Tech Stack
+## Tech Stack
 
 - **Backend**: FastAPI + Uvicorn
 - **Database**: Supabase Postgres
 - **Storage**: Supabase Storage
-- **Background Tasks**: Celery (async job processing)
 - **Package Management**: uv
+- **Hosting**: Render
 
 ## Project Structure
 
@@ -22,24 +20,13 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 │   ├── config.py            # Environment variables & settings
 │   ├── routes.py            # API route registration
 │   ├── models/              # Pydantic models for validation
-│   │   └── __init__.py
-│   ├── handlers/            # API endpoint handlers (business logic)
-│   │   ├── __init__.py
-│   │   ├── health.py        # Health check endpoint
-│   │   └── jobs.py          # Job CRUD endpoints
-│   ├── database/            # Database & storage operations
-│   │   └── __init__.py
-│   └── workers/             # Celery background tasks
-│       └── __init__.py
+│   ├── handlers/            # API endpoint handlers
+│   └── database/            # Database & storage operations
 ├── tests/
-│   ├── __init__.py
-│   ├── factories/           # Test data factories
-│   │   └── __init__.py
-│   └── integration/         # Integration tests
-│       └── __init__.py
 ├── .env.example             # Environment variable template
 ├── pyproject.toml           # Project dependencies
 ├── uv.lock                  # Locked dependencies
+├── render.yaml              # Render Blueprint for deployment
 ├── Makefile                 # Common development commands
 └── README.md
 ```
@@ -65,18 +52,18 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
    uv sync
    ```
 
+3. **Create environment file**
+   ```bash
+   make env
+   ```
+   Then edit `.env` with your Supabase and Aquifer credentials.
+
 ### Running the Application
 
 #### Development Mode
 
-Start the FastAPI server:
 ```bash
 uv run uvicorn app.main:app --reload
-```
-
-Start the Celery worker (in a separate terminal):
-```bash
-uv run celery -A app.workers worker --loglevel=info
 ```
 
 Access the API documentation at: `http://localhost:8000/docs`
@@ -86,7 +73,6 @@ Access the API documentation at: `http://localhost:8000/docs`
 ```bash
 make install    # Install dependencies
 make dev        # Run development server
-make worker     # Run Celery worker
 make test       # Run tests
 ```
 
@@ -98,3 +84,6 @@ GET /health
 Returns: { "status": "healthy" }
 ```
 
+## Deploy to Render
+
+See the deployment instructions in the project, or use the included `render.yaml` Blueprint.
