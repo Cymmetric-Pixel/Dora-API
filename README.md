@@ -1,6 +1,6 @@
-# FastAPI Scaffold with Background Processing
+# Dora API
 
-A production-ready FastAPI scaffold for building applications with asynchronous background job processing, file storage, and real-time status polling.
+A FastAPI service that returns Aquifer biblical content related to highlighted text in the Bible app. Built on a scaffold with async background job processing, Supabase storage, and status polling.
 
 ## Architecture Overview
 

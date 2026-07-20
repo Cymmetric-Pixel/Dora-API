@@ -1,12 +1,17 @@
 """Application configuration using Pydantic settings."""
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-import os
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
-    SUPABASE_URL: str = os.environ.get("SUPABASE_URL")
-    SUPABASE_KEY: str = os.environ.get("SUPABASE_KEY")
+    SUPABASE_URL: str | None = None
+    SUPABASE_KEY: str | None = None
+
+    # Aquifer API
+    AQUIFER_API_KEY: str | None = None
+    AQUIFER_BASE_URL: str = "https://api.aquifer.bible"
+
     # Celery Configuration
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"

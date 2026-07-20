@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
-from supabase import acreate_client, AsyncClient
+from supabase import AsyncClient, acreate_client
+
 from app.config import settings
 
 key: str = settings.SUPABASE_KEY

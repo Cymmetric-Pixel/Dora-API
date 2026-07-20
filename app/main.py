@@ -1,10 +1,10 @@
 """FastAPI application entry point."""
-import app.database.client as db
-
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.database.client as db
 from app.config import settings
 from app.routes import router
 
@@ -16,9 +16,9 @@ async def lifespan(app: FastAPI):
     await db.close_supabase()
 
 app = FastAPI(
-    title="Horse Race API",
-    description="API for processing horse racing PDFs into CSV format",
-    version="1.0.0",
+    title="Dora API",
+    description="Serves Aquifer biblical content related to highlighted Bible text",
+    version="0.1.0",
     lifespan=lifespan,
 )
 app.include_router(router)
