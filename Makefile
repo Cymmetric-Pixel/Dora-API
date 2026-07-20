@@ -1,7 +1,7 @@
 .PHONY: help install dev run worker test clean lint format
 
 help:
-	@echo "Horse Race API - Available Commands:"
+	@echo "Dora API - Available Commands:"
 	@echo ""
 	@echo "  make install    - Install dependencies"
 	@echo "  make dev        - Run development server with auto-reload"
@@ -22,7 +22,7 @@ run:
 	python -m app.main
 
 worker:
-	celery -A app.workers.pdf_processor worker --loglevel=info
+	celery -A app.workers worker --loglevel=info
 
 test:
 	pytest
