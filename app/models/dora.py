@@ -2,10 +2,10 @@
 
 A "dora" is a unit of extra-biblical content tied to highlighted Bible text.
 """
+
 from typing import Literal
 
 from pydantic import BaseModel, Field
-
 
 ContentType = Literal[
     "Bible Dictionary",
@@ -36,10 +36,11 @@ MediaType = Literal["none", "text", "audio", "video", "image"]
 class DoraRequest(BaseModel):
     """Incoming highlight selection used to resolve related doras."""
 
+    # camelCase mirrors the frontend highlight-selection JSON payload.
     references: list[str] = Field(default_factory=list)
-    targetText: str | None = None
-    startOffset: int | None = None
-    endOffset: int | None = None
+    targetText: str | None = None  # noqa: N815
+    startOffset: int | None = None  # noqa: N815
+    endOffset: int | None = None  # noqa: N815
 
 
 class Publisher(BaseModel):

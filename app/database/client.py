@@ -1,10 +1,9 @@
 """Postgres connection pool via psycopg2."""
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
-import psycopg2
-from psycopg2.extensions import connection as PgConnection
+from psycopg2.extensions import connection
 from psycopg2.pool import ThreadedConnectionPool
 
 from app.config import settings
@@ -31,7 +30,7 @@ def close_db() -> None:
 
 
 @contextmanager
-def database_session() -> Generator[PgConnection, None, None]:
+def database_session() -> Generator[connection]:
     """Borrow a connection from the pool for the duration of the block."""
     if _pool is None:
         raise RuntimeError("Database pool not initialized")
