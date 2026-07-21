@@ -1,0 +1,86 @@
+{
+  "2": {
+    "name": "Bible Dictionary (Tyndale)",
+    "resource_type": "Dictionary"
+  },
+  "15": {
+    "name": "Images (FIA)",
+    "resource_type": "Images"
+  },
+  "3": {
+    "name": "Images (UBS)",
+    "resource_type": "Images"
+  },
+  "12": {
+    "name": "Key Terms (Biblica)",
+    "resource_type": "Dictionary"
+  },
+  "17": {
+    "name": "Key Terms (FIA)",
+    "resource_type": "Dictionary"
+  },
+  "16": {
+    "name": "Maps (FIA)",
+    "resource_type": "Images"
+  },
+  "14": {
+    "name": "Open Bible Stories (unfoldingWord)",
+    "resource_type": "Dictionary"
+  },
+  "18": {
+    "name": "Open Translator's Notes (SIL)",
+    "resource_type": "Guide"
+  },
+  "9": {
+    "name": "Study Notes - Book Intro Summaries (Tyndale)",
+    "resource_type": "StudyNotes"
+  },
+  "19": {
+    "name": "Study Notes - Book Intros (Biblica)",
+    "resource_type": "StudyNotes"
+  },
+  "8": {
+    "name": "Study Notes - Book Intros (Tyndale)",
+    "resource_type": "StudyNotes"
+  },
+  "21": {
+    "name": "Study Notes - Profiles (Tyndale)",
+    "resource_type": "StudyNotes"
+  },
+  "20": {
+    "name": "Study Notes - Themes (Tyndale)",
+    "resource_type": "StudyNotes"
+  },
+  "6": {
+    "name": "Study Notes (Biblica)",
+    "resource_type": "StudyNotes"
+  },
+  "5": {
+    "name": "Study Notes (Tyndale)",
+    "resource_type": "StudyNotes"
+  },
+  "1": {
+    "name": "Translation Guide (FIA)",
+    "resource_type": "Guide"
+  },
+  "10": {
+    "name": "Translation Manual (unfoldingWord)",
+    "resource_type": "Guide"
+  },
+  "11": {
+    "name": "Translation Notes (unfoldingWord)",
+    "resource_type": "Guide"
+  },
+  "13": {
+    "name": "Translation Questions (unfoldingWord)",
+    "resource_type": "Guide"
+  },
+  "7": {
+    "name": "Translation Words (unfoldingWord)",
+    "resource_type": "Guide"
+  },
+  "4": {
+    "name": "Videos (Video Bible Dictionary)",
+    "resource_type": "Videos"
+  }
+}
