@@ -1,0 +1,38 @@
+# Build image and push to Artifact Registry.
+# Prefer `make deploy-source` for a full deploy (env vars with = are awkward in substitutions).
+#
+# Usage:
+#   gcloud builds submit --config cloudbuild.yaml
+#
+# Optional substitutions:
+#   _SERVICE_NAME   (default: dora-api)
+#   _REGION         (default: us-central1)
+#   _AR_REPO        (default: dora)
+
+substitutions:
+  _SERVICE_NAME: dora-api
+  _REGION: us-central1
+  _AR_REPO: dora
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$BUILD_ID
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$BUILD_ID
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

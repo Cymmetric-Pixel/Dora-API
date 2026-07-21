@@ -5,10 +5,10 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 ## Tech Stack
 
 - **Backend**: FastAPI + Uvicorn
-- **Database**: Postgres (Cloud SQL) via psycopg2
+- **Database**: Cloud SQL Postgres via psycopg2
 - **Package Management**: uv
 - **Env loading**: direnv (`.envrc`)
-- **Hosting**: Render / Cloud Run
+- **Hosting**: Cloud Run
 
 ## Project Structure
 
@@ -21,13 +21,14 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 │   ├── routes.py            # API route registration
 │   ├── models/              # Pydantic models for validation
 │   ├── handlers/            # API endpoint handlers
-│   └── database/            # Database & storage operations
+│   └── database/            # Database operations
 ├── tests/
+├── Dockerfile               # Cloud Run image
+├── cloudbuild.yaml          # Optional Cloud Build pipeline
 ├── .envrc.example           # direnv environment template
 ├── pyproject.toml           # Project dependencies
 ├── uv.lock                  # Locked dependencies
-├── render.yaml              # Render Blueprint for deployment
-├── Makefile                 # Common development commands
+├── Makefile                 # Common development / deploy commands
 └── README.md
 ```
 
@@ -38,7 +39,8 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 - Python 3.13+
 - [uv](https://github.com/astral-sh/uv)
 - [direnv](https://direnv.net/) (loads `.envrc` into your shell)
-- A Cloud SQL Postgres instance (or any Postgres URL)
+- [gcloud CLI](https://cloud.google.com/sdk/docs/install) (for deploy)
+- Cloud SQL instance: `hackathon-2026-503015:us-central1:dora`
 
 ### 1. Clone and install
 
@@ -58,55 +60,55 @@ Edit `.envrc` and set at least:
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | Postgres URI (Cloud SQL socket or host:port) |
+| `DATABASE_URL` | Postgres URI (Cloud SQL socket or local proxy) |
 
-Cloud Run / attached Cloud SQL instance:
+**Cloud Run** (Unix socket after attaching the instance):
 
 ```text
 postgresql://USER:PASSWORD@/DBNAME?host=/cloudsql/PROJECT:REGION:INSTANCE
 ```
 
-Local via [Cloud SQL Auth Proxy](https://cloud.google.com/sql/docs/postgres/connect-auth-proxy) on `127.0.0.1:5432`:
+**Local** via [Cloud SQL Auth Proxy](https://cloud.google.com/sql/docs/postgres/connect-auth-proxy):
 
-```text
-postgresql://USER:PASSWORD@127.0.0.1:5432/DBNAME
+```bash
+# Terminal 1 — proxy
+cloud-sql-proxy hackathon-2026-503015:us-central1:dora --port=5432
+
+# .envrc for local
+export DATABASE_URL='postgresql://postgres:PASSWORD@127.0.0.1:5432/postgres'
 ```
 
-Then allow direnv to load it:
+Then:
 
 ```bash
 direnv allow
+echo $DATABASE_URL   # should print your URI
 ```
 
-Confirm the vars are in your shell:
+### 3. Run the API locally
 
 ```bash
-echo $DATABASE_URL
-```
-
-If that prints empty, direnv is not hooking into your shell yet. Add the hook for your shell ([direnv install docs](https://direnv.net/docs/hook.html)), open a new terminal in this directory, and run `direnv allow` again.
-
-### 3. Run the API
-
-```bash
-make run       # http://127.0.0.1:8000
-# or with auto-reload:
+make run       # http://127.0.0.1:8080
+# or with auto-reload on :8000:
 make dev
 ```
 
-API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (dev) or `:8080` (run)
 
 ## Make Commands
 
 ```bash
-make install    # Install dependencies (uv sync)
-make env        # Create .envrc from .envrc.example
-make dev        # Dev server with auto-reload
-make run        # Run server
-make test       # Run tests
-make lint       # Ruff check
-make format     # Ruff format
-make clean      # Remove caches
+make install         # Install dependencies (uv sync)
+make env             # Create .envrc from .envrc.example
+make dev             # Dev server with auto-reload
+make run             # Run server
+make test            # Run tests
+make lint            # Ruff check
+make format          # Ruff format
+make clean           # Remove caches
+make secret          # Push DATABASE_URL to Secret Manager
+make deploy-source   # Deploy to Cloud Run (remote build)
+make deploy          # Local Docker build + push + deploy
 ```
 
 ## API Endpoints
@@ -118,6 +120,70 @@ GET /health
 Returns: { "status": "healthy" }
 ```
 
-## Deploy to Render
+## Deploy to Cloud Run
 
-Use the included `render.yaml` Blueprint. Set `DATABASE_URL` and other secrets in the Render dashboard (not via `.envrc`). Note: the `/cloudsql/...` socket URI only works when the app runs on GCP with that Cloud SQL instance attached; on Render use a public/private IP or Auth Proxy-compatible host URI instead.
+Defaults match this hackathon project:
+
+| Setting | Value |
+|---|---|
+| Project | `hackathon-2026-503015` |
+| Region | `us-central1` |
+| Service | `dora-api` |
+| Cloud SQL | `hackathon-2026-503015:us-central1:dora` |
+
+### One-time GCP setup
+
+```bash
+gcloud config set project hackathon-2026-503015
+
+gcloud services enable \
+  run.googleapis.com \
+  sqladmin.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  secretmanager.googleapis.com
+
+# The default compute service account acts as both the Cloud Build SA
+# (on newer projects) and the Cloud Run runtime SA. Grant it what it needs:
+PROJECT_NUMBER=$(gcloud projects describe hackathon-2026-503015 --format='value(projectNumber)')
+COMPUTE_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+
+gcloud projects add-iam-policy-binding hackathon-2026-503015 \
+  --member="serviceAccount:${COMPUTE_SA}" --role="roles/run.admin"
+gcloud projects add-iam-policy-binding hackathon-2026-503015 \
+  --member="serviceAccount:${COMPUTE_SA}" --role="roles/iam.serviceAccountUser"
+gcloud projects add-iam-policy-binding hackathon-2026-503015 \
+  --member="serviceAccount:${COMPUTE_SA}" --role="roles/cloudsql.client"
+gcloud projects add-iam-policy-binding hackathon-2026-503015 \
+  --member="serviceAccount:${COMPUTE_SA}" --role="roles/secretmanager.secretAccessor"
+```
+
+If your project uses the legacy Cloud Build service account (`PROJECT_NUMBER@cloudbuild.gserviceaccount.com`), grant it `roles/run.admin` and `roles/iam.serviceAccountUser` as well.
+
+### Deploy (recommended)
+
+With `DATABASE_URL` loaded in your shell (direnv):
+
+```bash
+make deploy-source
+```
+
+This pushes `DATABASE_URL` to Secret Manager (secret `dora-database-url`), builds from the `Dockerfile`, attaches Cloud SQL, and mounts the secret as the `DATABASE_URL` env var. Your `DATABASE_URL` should use the socket form:
+
+```text
+postgresql://postgres:PASSWORD@/postgres?host=/cloudsql/hackathon-2026-503015:us-central1:dora
+```
+
+### Alternative: build image only (Cloud Build)
+
+```bash
+gcloud builds submit --config cloudbuild.yaml
+# then: make deploy  (or gcloud run deploy with the pushed image)
+```
+
+### Verify
+
+```bash
+gcloud run services describe dora-api --region=us-central1 --format='value(status.url)'
+curl "$(gcloud run services describe dora-api --region=us-central1 --format='value(status.url)')/health"
+```

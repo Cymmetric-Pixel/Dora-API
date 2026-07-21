@@ -1,6 +1,6 @@
 """Application configuration using Pydantic settings."""
 
-from pydantic import Field, computed_field
+from pydantic import AliasChoices, Field, computed_field
 from pydantic_settings import BaseSettings
 
 
@@ -24,9 +24,9 @@ class Settings(BaseSettings):
         validation_alias="CORS_ORIGINS",
     )
 
-    # Server
+    # Server — Cloud Run injects PORT; the Dockerfile binds 0.0.0.0 explicitly
     server_host: str = "127.0.0.1"
-    server_port: int = 8000
+    server_port: int = Field(default=8080, validation_alias=AliasChoices("PORT", "SERVER_PORT"))
 
     @computed_field  # type: ignore[prop-decorator]
     @property
