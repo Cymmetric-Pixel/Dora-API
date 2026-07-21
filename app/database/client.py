@@ -4,8 +4,8 @@ from supabase import AsyncClient, acreate_client
 
 from app.config import settings
 
-key: str = settings.SUPABASE_KEY
-url: str = settings.SUPABASE_URL
+key: str = settings.supabase_key
+url: str = settings.supabase_url
 
 # Global reference
 supabase_client: AsyncClient | None = None
@@ -16,10 +16,10 @@ async def init_supabase():
     supabase_client = await acreate_client(url, key)
 
 async def close_supabase():
-    """Close Supabase client on app shutdown"""
+    """Release Supabase client on app shutdown"""
     global supabase_client
     if supabase_client:
-        await supabase_client.close()
+        await supabase_client.remove_all_channels()
         supabase_client = None
 
 @asynccontextmanager
