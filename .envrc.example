@@ -7,6 +7,8 @@
 # Local (Cloud SQL Auth Proxy on 127.0.0.1:5432):
 #   postgresql://USER:PASSWORD@127.0.0.1:5432/DBNAME
 export DATABASE_URL=postgresql://postgres:your-password@/postgres?host=/cloudsql/hackathon-2026-503015:us-central1:dora
+# Used by `make db` so psql can skip the password prompt
+export DATABASE_PASSWORD=your-password
 
 # Aquifer API
 export AQUIFER_API_KEY=your-aquifer-api-key

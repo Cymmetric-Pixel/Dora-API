@@ -117,7 +117,9 @@ make deploy          # Local Docker build + push + deploy
 # one-time ADC setup (required by the proxy gcloud starts)
 gcloud auth application-default login
 
-make db   # prompts for the postgres password
+# set DATABASE_PASSWORD in .envrc, then:
+direnv allow
+make db   # uses DATABASE_PASSWORD if set; otherwise prompts
 ```
 
 ## API Endpoints

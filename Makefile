@@ -67,11 +67,20 @@ env:
 
 # Interactive psql via gcloud (starts Cloud SQL Auth Proxy under the hood).
 # Needs ADC once: gcloud auth application-default login
+# If DATABASE_PASSWORD is set (e.g. via .envrc), skips the password prompt.
 db:
-	gcloud sql connect $(DB_INSTANCE) \
-		--project=$(PROJECT_ID) \
-		--user=$(DB_USER) \
-		--database=$(DB_NAME)
+	@if [ -n "$$DATABASE_PASSWORD" ]; then \
+		PGPASSWORD="$$DATABASE_PASSWORD" gcloud sql connect $(DB_INSTANCE) \
+			--project=$(PROJECT_ID) \
+			--user=$(DB_USER) \
+			--database=$(DB_NAME); \
+	else \
+		echo "DATABASE_PASSWORD not set — you will be prompted for the password"; \
+		gcloud sql connect $(DB_INSTANCE) \
+			--project=$(PROJECT_ID) \
+			--user=$(DB_USER) \
+			--database=$(DB_NAME); \
+	fi
 
 # Write env vars YAML so DATABASE_URL query params (?host=...) don't break gcloud parsing
 define write-env-file
