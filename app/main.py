@@ -26,7 +26,7 @@ app.include_router(router)
 # CORS middleware for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "app.main:app",
-        host=settings.SERVER_HOST,
-        port=settings.SERVER_PORT,
-        reload=settings.ENVIRONMENT == "development",
+        host=settings.server_host,
+        port=settings.server_port,
+        reload=settings.environment == "development",
     )

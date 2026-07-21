@@ -8,6 +8,7 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 - **Database**: Supabase Postgres
 - **Storage**: Supabase Storage
 - **Package Management**: uv
+- **Env loading**: direnv (`.envrc`)
 - **Hosting**: Render
 
 ## Project Structure
@@ -23,7 +24,7 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 │   ├── handlers/            # API endpoint handlers
 │   └── database/            # Database & storage operations
 ├── tests/
-├── .env.example             # Environment variable template
+├── .envrc.example           # direnv environment template
 ├── pyproject.toml           # Project dependencies
 ├── uv.lock                  # Locked dependencies
 ├── render.yaml              # Render Blueprint for deployment
@@ -36,49 +37,72 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 ### Prerequisites
 
 - Python 3.13+
-- [uv](https://github.com/astral-sh/uv) package manager
-- Supabase account (for database & storage)
+- [uv](https://github.com/astral-sh/uv)
+- [direnv](https://direnv.net/) (loads `.envrc` into your shell)
+- A Supabase project
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd <repo-name>
-   ```
-
-2. **Install dependencies**
-   ```bash
-   uv sync
-   ```
-
-3. **Create environment file**
-   ```bash
-   make env
-   ```
-   Then edit `.env` with your Supabase and Aquifer credentials.
-
-### Running the Application
-
-#### Development Mode
+### 1. Clone and install
 
 ```bash
-uv run uvicorn app.main:app --reload
+git clone <your-repo-url>
+cd Dora-API
+make install   # or: uv sync
 ```
 
-Access the API documentation at: `http://localhost:8000/docs`
-
-#### Using Make Commands
+### 2. Configure environment variables
 
 ```bash
-make install    # Install dependencies
-make dev        # Run development server
+make env       # copies .envrc.example → .envrc
+```
+
+Edit `.envrc` and set at least:
+
+| Variable | Value |
+|---|---|
+| `SUPABASE_URL` | Project URL (`https://….supabase.co`) |
+| `SUPABASE_KEY` | **Secret** API key (`sb_secret_…`) — not the publishable key |
+
+Then allow direnv to load it:
+
+```bash
+direnv allow
+```
+
+Confirm the vars are in your shell:
+
+```bash
+echo $SUPABASE_URL
+```
+
+If that prints empty, direnv is not hooking into your shell yet. Add the hook for your shell ([direnv install docs](https://direnv.net/docs/hook.html)), open a new terminal in this directory, and run `direnv allow` again.
+
+### 3. Run the API
+
+```bash
+make run       # http://127.0.0.1:8000
+# or with auto-reload:
+make dev
+```
+
+API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+## Make Commands
+
+```bash
+make install    # Install dependencies (uv sync)
+make env        # Create .envrc from .envrc.example
+make dev        # Dev server with auto-reload
+make run        # Run server
 make test       # Run tests
+make lint       # Ruff check
+make format     # Ruff format
+make clean      # Remove caches
 ```
 
 ## API Endpoints
 
 ### Health Check
+
 ```
 GET /health
 Returns: { "status": "healthy" }
@@ -86,4 +110,4 @@ Returns: { "status": "healthy" }
 
 ## Deploy to Render
 
-See the deployment instructions in the project, or use the included `render.yaml` Blueprint.
+Use the included `render.yaml` Blueprint. Set `SUPABASE_URL`, `SUPABASE_KEY`, and other secrets in the Render dashboard (not via `.envrc`).

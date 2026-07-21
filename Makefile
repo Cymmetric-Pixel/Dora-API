@@ -11,7 +11,7 @@ help:
 	@echo "  make lint       - Run linters (ruff)"
 	@echo "  make format     - Format code (ruff format)"
 	@echo "  make clean      - Remove Python cache files"
-	@echo "  make env        - Create .env file from example"
+	@echo "  make env        - Create .envrc from .envrc.example"
 	@echo ""
 
 install:
@@ -43,10 +43,10 @@ clean:
 	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 
 env:
-	@if [ ! -f .env ]; then \
-		cp .env.example .env; \
-		echo ".env file created from .env.example"; \
-		echo "Please update .env with your configuration"; \
+	@if [ ! -f .envrc ]; then \
+		cp .envrc.example .envrc; \
+		echo ".envrc created from .envrc.example"; \
+		echo "Fill in your secrets, then run: direnv allow"; \
 	else \
-		echo ".env file already exists"; \
+		echo ".envrc already exists"; \
 	fi

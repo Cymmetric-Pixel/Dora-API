@@ -1,0 +1,20 @@
+# Copy to .envrc, fill in values, then run: direnv allow
+# Requires direnv: https://direnv.net/
+
+# Supabase Configuration
+# URL: Project Settings → Data API → Project URL
+# KEY: Project Settings → API Keys → secret key (sb_secret_...)
+#      Use the secret key for this backend — not the publishable key.
+export SUPABASE_URL=https://your-project.supabase.co
+export SUPABASE_KEY=sb_secret_your-supabase-secret-key
+
+# Aquifer API
+export AQUIFER_API_KEY=your-aquifer-api-key
+export AQUIFER_BASE_URL=https://api.aquifer.bible
+
+# Application Configuration
+export ENVIRONMENT=development
+export LOG_LEVEL=INFO
+
+# CORS Configuration (comma-separated)
+export CORS_ORIGINS=http://localhost:3000,http://localhost:5173

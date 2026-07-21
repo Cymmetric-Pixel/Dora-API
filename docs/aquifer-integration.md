@@ -18,7 +18,7 @@ Every request sends the key in an `api-key` header:
 api-key: <your-key>
 ```
 
-Request a key at https://www.aquifer.bible/apiaccess (emailed to you). In Dora it's configured via `AQUIFER_API_KEY` / `AQUIFER_BASE_URL` (see `.env.example`).
+Request a key at https://www.aquifer.bible/apiaccess (emailed to you). In Dora it's configured via `AQUIFER_API_KEY` / `AQUIFER_BASE_URL` (see `.envrc.example`).
 
 ## Core flow for Dora
 
