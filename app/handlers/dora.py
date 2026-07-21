@@ -20,7 +20,10 @@ MOCK_DORAS: list[DoraItem] = [
     DoraItem(
         content_type="Study Notes",
         title="Understanding the Passage",
-        text="This passage emphasizes God's love demonstrated through Christ. The surrounding context clarifies who is speaking and to whom the promise applies.",
+        text=(
+            "This passage emphasizes God's love demonstrated through Christ. The surrounding "
+            "context clarifies who is speaking and to whom the promise applies."
+        ),
         url="https://example.com/study-notes/john-3-16",
         media_type="text",
         publisher=Publisher(
@@ -42,7 +45,10 @@ MOCK_DORAS: list[DoraItem] = [
     DoraItem(
         content_type="Key Verse",
         title="John 3:16",
-        text="For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
+        text=(
+            "For God so loved the world that he gave his one and only Son, that whoever "
+            "believes in him shall not perish but have eternal life."
+        ),
         url="https://example.com/verses/JHN.3.16",
         media_type="text",
         publisher=Publisher(
@@ -53,7 +59,11 @@ MOCK_DORAS: list[DoraItem] = [
     DoraItem(
         content_type="Commentary",
         title="Commentary on John 3:16",
-        text="This verse summarizes the gospel: God's initiative in love, the gift of the Son, the call to believe, and the promise of eternal life. It stands at the heart of Jesus' conversation with Nicodemus about new birth and salvation.",
+        text=(
+            "This verse summarizes the gospel: God's initiative in love, the gift of the Son, "
+            "the call to believe, and the promise of eternal life. It stands at the heart of "
+            "Jesus' conversation with Nicodemus about new birth and salvation."
+        ),
         url="https://example.com/commentary/john-3-16",
         media_type="text",
         publisher=Publisher(
@@ -66,9 +76,10 @@ MOCK_DORAS: list[DoraItem] = [
 
 async def get_doras(
     references: Annotated[list[str] | None, Query()] = None,
-    targetText: str | None = None,
-    startOffset: int | None = None,
-    endOffset: int | None = None,
+    # camelCase names are the public query-param keys the frontend sends.
+    targetText: str | None = None,  # noqa: N803
+    startOffset: int | None = None,  # noqa: N803
+    endOffset: int | None = None,  # noqa: N803
 ) -> DoraResponse:
     """Return doras for the given Bible selection."""
     # TODO: resolve selection to real Aquifer / generated content
