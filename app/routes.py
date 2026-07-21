@@ -6,4 +6,4 @@ router = APIRouter()
 
 router.add_api_route(path="/health", endpoint=health.health_check, methods=["GET"])
 router.add_api_route(path="/ping", endpoint=health.ping, methods=["GET"])
-router.add_api_route(path="/dora", endpoint=dora.get_doras, methods=["GET"])
+router.add_api_route(path="/doras", endpoint=dora.get_doras, methods=["GET"])
