@@ -100,15 +100,24 @@ API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (dev) or `:80
 ```bash
 make install         # Install dependencies (uv sync)
 make env             # Create .envrc from .envrc.example
+make db              # Open a psql session to Cloud SQL
 make dev             # Dev server with auto-reload
 make run             # Run server
 make test            # Run tests
 make lint            # Ruff check
 make format          # Ruff format
 make clean           # Remove caches
-make secret          # Push DATABASE_URL to Secret Manager
 make deploy-source   # Deploy to Cloud Run (remote build)
 make deploy          # Local Docker build + push + deploy
+```
+
+### Connect to Cloud SQL
+
+```bash
+# one-time ADC setup (required by the proxy gcloud starts)
+gcloud auth application-default login
+
+make db   # prompts for the postgres password
 ```
 
 ## API Endpoints
@@ -140,8 +149,7 @@ gcloud services enable \
   run.googleapis.com \
   sqladmin.googleapis.com \
   artifactregistry.googleapis.com \
-  cloudbuild.googleapis.com \
-  secretmanager.googleapis.com
+  cloudbuild.googleapis.com
 
 # The default compute service account acts as both the Cloud Build SA
 # (on newer projects) and the Cloud Run runtime SA. Grant it what it needs:
@@ -154,8 +162,6 @@ gcloud projects add-iam-policy-binding hackathon-2026-503015 \
   --member="serviceAccount:${COMPUTE_SA}" --role="roles/iam.serviceAccountUser"
 gcloud projects add-iam-policy-binding hackathon-2026-503015 \
   --member="serviceAccount:${COMPUTE_SA}" --role="roles/cloudsql.client"
-gcloud projects add-iam-policy-binding hackathon-2026-503015 \
-  --member="serviceAccount:${COMPUTE_SA}" --role="roles/secretmanager.secretAccessor"
 ```
 
 If your project uses the legacy Cloud Build service account (`PROJECT_NUMBER@cloudbuild.gserviceaccount.com`), grant it `roles/run.admin` and `roles/iam.serviceAccountUser` as well.
@@ -168,7 +174,7 @@ With `DATABASE_URL` loaded in your shell (direnv):
 make deploy-source
 ```
 
-This pushes `DATABASE_URL` to Secret Manager (secret `dora-database-url`), builds from the `Dockerfile`, attaches Cloud SQL, and mounts the secret as the `DATABASE_URL` env var. Your `DATABASE_URL` should use the socket form:
+This builds from the `Dockerfile`, attaches Cloud SQL, and passes `DATABASE_URL` straight through as an env var (via a temp `--env-vars-file`, so the `?host=...` query string parses correctly). Your `DATABASE_URL` should use the socket form:
 
 ```text
 postgresql://postgres:PASSWORD@/postgres?host=/cloudsql/hackathon-2026-503015:us-central1:dora

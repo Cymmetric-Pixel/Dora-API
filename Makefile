@@ -1,4 +1,4 @@
-.PHONY: help install dev run test clean lint format env secret deploy deploy-source
+.PHONY: help install dev run test clean lint format env db deploy deploy-source
 
 # Cloud Run defaults (override: make deploy PROJECT_ID=... REGION=...)
 PROJECT_ID ?= hackathon-2026-503015
@@ -6,7 +6,9 @@ REGION ?= us-central1
 SERVICE ?= dora-api
 AR_REPO ?= dora
 CLOUD_SQL ?= hackathon-2026-503015:us-central1:dora
-SECRET_NAME ?= dora-database-url
+DB_INSTANCE ?= dora
+DB_USER ?= postgres
+DB_NAME ?= dora
 IMAGE ?= $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(AR_REPO)/$(SERVICE)
 
 help:
@@ -21,7 +23,7 @@ help:
 	@echo "  make format          - Format code (ruff format)"
 	@echo "  make clean           - Remove Python cache files"
 	@echo "  make env             - Create .envrc from .envrc.example"
-	@echo "  make secret          - Push DATABASE_URL to Secret Manager"
+	@echo "  make db              - Open a psql session to Cloud SQL"
 	@echo "  make deploy-source   - Deploy to Cloud Run from source (builds remotely)"
 	@echo "  make deploy          - Build locally, push, and deploy to Cloud Run"
 	@echo ""
@@ -63,17 +65,28 @@ env:
 		echo ".envrc already exists"; \
 	fi
 
-# Store DATABASE_URL in Secret Manager (creates secret or adds a new version)
-secret:
+# Interactive psql via gcloud (starts Cloud SQL Auth Proxy under the hood).
+# Needs ADC once: gcloud auth application-default login
+db:
+	gcloud sql connect $(DB_INSTANCE) \
+		--project=$(PROJECT_ID) \
+		--user=$(DB_USER) \
+		--database=$(DB_NAME)
+
+# Write env vars YAML so DATABASE_URL query params (?host=...) don't break gcloud parsing
+define write-env-file
 	@test -n "$$DATABASE_URL" || (echo "DATABASE_URL must be set (e.g. via direnv)" && exit 1)
-	@gcloud secrets describe $(SECRET_NAME) --project=$(PROJECT_ID) >/dev/null 2>&1 \
-		&& printf '%s' "$$DATABASE_URL" | gcloud secrets versions add $(SECRET_NAME) \
-			--project=$(PROJECT_ID) --data-file=- \
-		|| printf '%s' "$$DATABASE_URL" | gcloud secrets create $(SECRET_NAME) \
-			--project=$(PROJECT_ID) --replication-policy=automatic --data-file=-
+	@printf '%s\n' \
+		'ENVIRONMENT: production' \
+		'LOG_LEVEL: INFO' \
+		"DATABASE_URL: \"$$DATABASE_URL\"" \
+		> /tmp/dora-api-env.yaml
+
+endef
 
 # Fastest path: Cloud Build builds the Dockerfile and deploys
-deploy-source: secret
+deploy-source:
+	$(write-env-file)
 	gcloud run deploy $(SERVICE) \
 		--project=$(PROJECT_ID) \
 		--region=$(REGION) \
@@ -82,11 +95,12 @@ deploy-source: secret
 		--allow-unauthenticated \
 		--port=8080 \
 		--add-cloudsql-instances=$(CLOUD_SQL) \
-		--set-env-vars=ENVIRONMENT=production,LOG_LEVEL=INFO \
-		--set-secrets=DATABASE_URL=$(SECRET_NAME):latest
+		--env-vars-file=/tmp/dora-api-env.yaml
+	@rm -f /tmp/dora-api-env.yaml
 
 # Local Docker build → Artifact Registry → Cloud Run
-deploy: secret
+deploy:
+	$(write-env-file)
 	gcloud artifacts repositories describe $(AR_REPO) \
 		--project=$(PROJECT_ID) \
 		--location=$(REGION) >/dev/null 2>&1 \
@@ -106,5 +120,5 @@ deploy: secret
 		--allow-unauthenticated \
 		--port=8080 \
 		--add-cloudsql-instances=$(CLOUD_SQL) \
-		--set-env-vars=ENVIRONMENT=production,LOG_LEVEL=INFO \
-		--set-secrets=DATABASE_URL=$(SECRET_NAME):latest
+		--env-vars-file=/tmp/dora-api-env.yaml
+	@rm -f /tmp/dora-api-env.yaml
