@@ -11,9 +11,9 @@ from app.routes import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await db.init_supabase()
+    db.init_db()
     yield
-    await db.close_supabase()
+    db.close_db()
 
 app = FastAPI(
     title="Dora API",

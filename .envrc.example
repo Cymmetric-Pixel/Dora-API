@@ -1,12 +1,10 @@
 # Copy to .envrc, fill in values, then run: direnv allow
 # Requires direnv: https://direnv.net/
 
-# Supabase Configuration
-# URL: Project Settings → Data API → Project URL
-# KEY: Project Settings → API Keys → secret key (sb_secret_...)
-#      Use the secret key for this backend — not the publishable key.
-export SUPABASE_URL=https://your-project.supabase.co
-export SUPABASE_KEY=sb_secret_your-supabase-secret-key
+# Postgres (Cloud SQL)
+# Cloud Run / socket: postgresql://USER:PASSWORD@/DBNAME?host=/cloudsql/PROJECT:REGION:INSTANCE
+# Local via Auth Proxy on localhost: postgresql://USER:PASSWORD@127.0.0.1:5432/DBNAME
+export DATABASE_URL=postgresql://postgres:your-password@/postgres?host=/cloudsql/PROJECT:REGION:INSTANCE
 
 # Aquifer API
 export AQUIFER_API_KEY=your-aquifer-api-key

@@ -1,33 +1,47 @@
-from contextlib import asynccontextmanager
+"""Postgres connection pool via psycopg2."""
 
-from supabase import AsyncClient, acreate_client
+from contextlib import contextmanager
+from typing import Generator
+
+import psycopg2
+from psycopg2.extensions import connection as PgConnection
+from psycopg2.pool import ThreadedConnectionPool
 
 from app.config import settings
 
-key: str = settings.supabase_key
-url: str = settings.supabase_url
+_pool: ThreadedConnectionPool | None = None
 
-# Global reference
-supabase_client: AsyncClient | None = None
 
-async def init_supabase():
-    """Initialize Supabase client on app startup"""
-    global supabase_client
-    supabase_client = await acreate_client(url, key)
+def init_db() -> None:
+    """Create the connection pool on app startup."""
+    global _pool
+    _pool = ThreadedConnectionPool(
+        minconn=1,
+        maxconn=10,
+        dsn=settings.database_url,
+    )
 
-async def close_supabase():
-    """Release Supabase client on app shutdown"""
-    global supabase_client
-    if supabase_client:
-        await supabase_client.remove_all_channels()
-        supabase_client = None
 
-@asynccontextmanager
-async def database_session():
-    """Async context manager for database session"""
+def close_db() -> None:
+    """Close all pooled connections on app shutdown."""
+    global _pool
+    if _pool is not None:
+        _pool.closeall()
+        _pool = None
+
+
+@contextmanager
+def database_session() -> Generator[PgConnection, None, None]:
+    """Borrow a connection from the pool for the duration of the block."""
+    if _pool is None:
+        raise RuntimeError("Database pool not initialized")
+
+    conn = _pool.getconn()
     try:
-        if supabase_client is None:
-            raise RuntimeError("Supabase client not initialized")
-        yield supabase_client
-    except Exception as e:
-        raise RuntimeError(f"Error in supabase context: {e}") from e
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        _pool.putconn(conn)

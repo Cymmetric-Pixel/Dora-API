@@ -8,8 +8,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Required — app cannot start without these
-    supabase_url: str
-    supabase_key: str
+    database_url: str
 
     # Aquifer API
     aquifer_api_key: str | None = None

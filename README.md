@@ -5,11 +5,10 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 ## Tech Stack
 
 - **Backend**: FastAPI + Uvicorn
-- **Database**: Supabase Postgres
-- **Storage**: Supabase Storage
+- **Database**: Postgres (Cloud SQL) via psycopg2
 - **Package Management**: uv
 - **Env loading**: direnv (`.envrc`)
-- **Hosting**: Render
+- **Hosting**: Render / Cloud Run
 
 ## Project Structure
 
@@ -39,7 +38,7 @@ A FastAPI service that returns Aquifer biblical content related to highlighted t
 - Python 3.13+
 - [uv](https://github.com/astral-sh/uv)
 - [direnv](https://direnv.net/) (loads `.envrc` into your shell)
-- A Supabase project
+- A Cloud SQL Postgres instance (or any Postgres URL)
 
 ### 1. Clone and install
 
@@ -59,8 +58,19 @@ Edit `.envrc` and set at least:
 
 | Variable | Value |
 |---|---|
-| `SUPABASE_URL` | Project URL (`https://….supabase.co`) |
-| `SUPABASE_KEY` | **Secret** API key (`sb_secret_…`) — not the publishable key |
+| `DATABASE_URL` | Postgres URI (Cloud SQL socket or host:port) |
+
+Cloud Run / attached Cloud SQL instance:
+
+```text
+postgresql://USER:PASSWORD@/DBNAME?host=/cloudsql/PROJECT:REGION:INSTANCE
+```
+
+Local via [Cloud SQL Auth Proxy](https://cloud.google.com/sql/docs/postgres/connect-auth-proxy) on `127.0.0.1:5432`:
+
+```text
+postgresql://USER:PASSWORD@127.0.0.1:5432/DBNAME
+```
 
 Then allow direnv to load it:
 
@@ -71,7 +81,7 @@ direnv allow
 Confirm the vars are in your shell:
 
 ```bash
-echo $SUPABASE_URL
+echo $DATABASE_URL
 ```
 
 If that prints empty, direnv is not hooking into your shell yet. Add the hook for your shell ([direnv install docs](https://direnv.net/docs/hook.html)), open a new terminal in this directory, and run `direnv allow` again.
@@ -110,4 +120,4 @@ Returns: { "status": "healthy" }
 
 ## Deploy to Render
 
-Use the included `render.yaml` Blueprint. Set `SUPABASE_URL`, `SUPABASE_KEY`, and other secrets in the Render dashboard (not via `.envrc`).
+Use the included `render.yaml` Blueprint. Set `DATABASE_URL` and other secrets in the Render dashboard (not via `.envrc`). Note: the `/cloudsql/...` socket URI only works when the app runs on GCP with that Cloud SQL instance attached; on Render use a public/private IP or Auth Proxy-compatible host URI instead.

@@ -14,9 +14,7 @@ services:
         value: production
       - key: LOG_LEVEL
         value: INFO
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_KEY
+      - key: DATABASE_URL
         sync: false
       - key: AQUIFER_API_KEY
         sync: false
