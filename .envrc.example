@@ -14,6 +14,18 @@ export DATABASE_PASSWORD=your-password
 export AQUIFER_API_KEY=your-aquifer-api-key
 export AQUIFER_BASE_URL=https://api.aquifer.bible
 
+# Gemini — pick one auth method:
+# 1) AI Studio API key (if your org allows it):
+# export GEMINI_API_KEY=your-gemini-api-key
+#
+# 2) Vertex AI with Application Default Credentials (recommended for YouVersion GCP):
+#    Run: gcloud auth application-default login
+#    Credentials are read from ~/.config/gcloud/application_default_credentials.json
+export GEMINI_USE_VERTEX=true
+export GEMINI_PROJECT=hackathon-2026-503015
+export GEMINI_LOCATION=us-central1
+export GEMINI_MODEL=gemini-2.5-flash
+
 # Application Configuration
 export ENVIRONMENT=development
 export LOG_LEVEL=INFO

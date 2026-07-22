@@ -11,6 +11,7 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "python-dotenv==1.0.1",
     "httpx>=0.27.2",
+    "google-genai>=2.13.0",
 ]
 
 [tool.pytest.ini_options]
@@ -32,6 +33,9 @@ exclude = [
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"app/models/analyze.py" = ["N815"]
 
 [dependency-groups]
 dev = [

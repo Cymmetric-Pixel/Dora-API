@@ -131,6 +131,50 @@ GET /health
 Returns: { "status": "healthy" }
 ```
 
+### Analyze Bible Selection (Gemini)
+
+```
+POST /dora/analyze
+Content-Type: application/json
+
+{
+  "references": ["JHN.3.16.NIV"],
+  "targetText": null,
+  "startOffset": null,
+  "endOffset": null
+}
+```
+
+Returns the raw JSON from Gemini using [`prompts/dora_prompt.md`](prompts/dora_prompt.md). The response is also printed to the server console for debugging.
+
+Requires Gemini auth via **one** of:
+
+1. **Vertex AI + ADC (recommended when API keys are disabled):**
+   ```bash
+   gcloud auth application-default login
+   export GEMINI_USE_VERTEX=true
+   export GEMINI_PROJECT=hackathon-2026-503015
+   export GEMINI_LOCATION=us-central1
+   export GEMINI_MODEL=gemini-2.5-flash
+   ```
+   Credentials are read automatically from `~/.config/gcloud/application_default_credentials.json`.
+
+2. **AI Studio API key** (if your org allows it):
+   ```bash
+   export GEMINI_API_KEY=your-key
+   export GEMINI_USE_VERTEX=false
+   ```
+
+Example:
+
+```bash
+curl -X POST http://127.0.0.1:8000/dora/analyze \
+  -H 'Content-Type: application/json' \
+  -d '{"references":["JHN.3.16.NIV"],"targetText":null,"startOffset":null,"endOffset":null}'
+```
+
+Note: the full system prompt is large (~1500 lines), so first requests may take several seconds.
+
 ## Deploy to Cloud Run
 
 Defaults match this hackathon project:
