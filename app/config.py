@@ -14,6 +14,13 @@ class Settings(BaseSettings):
     aquifer_api_key: str | None = None
     aquifer_base_url: str = "https://api.aquifer.bible"
 
+    # Gemini — use either GEMINI_API_KEY (AI Studio) or Vertex AI with ADC
+    gemini_api_key: str | None = None
+    gemini_use_vertex: bool = True
+    gemini_project: str | None = None
+    gemini_location: str = "us-central1"
+    gemini_model: str = "gemini-2.5-flash"
+
     # Application
     environment: str = "development"
     log_level: str = "INFO"
@@ -32,6 +39,11 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins_raw.split(",") if origin.strip()]
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def gemini_configured(self) -> bool:
+        return bool(self.gemini_api_key) or self.gemini_use_vertex
 
 
 settings = Settings()

@@ -1,9 +1,18 @@
-"""Dora content endpoint."""
-from typing import Annotated
+"""Dora content endpoints."""
 
-from fastapi import Query
+import json
+import logging
+from typing import Annotated, Any
 
+from fastapi import HTTPException, Query
+
+from app.config import settings
+from app.models.analyze import DoraAnalyzeRequest
 from app.models.dora import DoraItem, DoraResponse, Publisher
+from app.services import gemini
+from app.services.gemini import GeminiNotConfiguredError, GeminiServiceError
+
+logger = logging.getLogger(__name__)
 
 MOCK_DORAS: list[DoraItem] = [
     DoraItem(
@@ -84,3 +93,20 @@ async def get_doras(
     """Return doras for the given Bible selection."""
     # TODO: resolve selection to real Aquifer / generated content
     return DoraResponse(data=MOCK_DORAS)
+
+
+async def analyze_dora(body: DoraAnalyzeRequest) -> dict[str, Any]:
+    """Analyze a Bible selection with Gemini and return the raw JSON response."""
+    if not settings.gemini_configured:
+        raise HTTPException(status_code=503, detail="Gemini is not configured")
+
+    try:
+        response = await gemini.generate_dora(body)
+    except GeminiNotConfiguredError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except GeminiServiceError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    print(json.dumps(response, indent=2))
+    logger.info("Gemini analyze response: %s", json.dumps(response))
+    return response
